@@ -13,11 +13,9 @@ let operatorValues = {
   division: '/', 
 }
 
-let params;
-let result = null;
-let currentDigits =[];
+let params, result, currentDigits;
 
-function reset() {
+function resetParams() {
   params = {
     first: null,
     operator: null,
@@ -25,7 +23,13 @@ function reset() {
   }
 }
 
-reset();
+function resetAll() {
+  resetParams();
+  result = null;
+  currentDigits = [];
+}
+
+resetAll();
 
 function calc() {
   switch(params.operator) {
@@ -34,7 +38,9 @@ function calc() {
     case '-':
       return params.first - params.last;
     case '/':
-      throwErrorDivinding0();
+      if(params.first == 0 && params.last == 0){
+        return 'Sneaky! But you cannot divide 0 / 0'; 
+      }
       return params.first / params.last;
     case '*':
       return params.first * params.last;
@@ -49,31 +55,38 @@ function debug(message) {
   console.log(message);
 }
 
-
-function isParamsPropertyDefined(paramsProperty){
-  if(paramsProperty == null || paramsProperty == undefined || isNaN(paramsProperty)){
-    return false; 
-  }
-  return true; 
+function isNumber(value){
+  return typeof value === 'number' && !isNaN(value);
 }
 
 function number_test(result){
   let isdecimal = (result - Math.floor(result)) !== 0; 
     if(isdecimal){
-    console.log('Number has isdecimal decimal place.');
-    return result.toFixed(2); 
+    console.log('Number has a decimal place.',isdecimal);
+    return Number(result).toFixed(3); 
     } else {
-    console.log('It is isdecimal whole number.'); 
+    console.log('It is a whole number.'); 
     return result; 
     }
 }
 
+/**
+ * iwepaoiwefjpoawiefj
+ * @param {string} buttonId 
+ * @returns void
+ */
 function onBtnExecution(buttonId){
   console.log(buttonId);
   let parsed = parseInt(buttonId);
   //5 main options - buttonId is isdecimal Num, Operator, Enter, Clear, or Backspace
   //if buttonIs isdecimal num
   if(!isNaN(parsed)){
+    if(currentDigits[0] == result){
+      currentDigits = [];
+      currentDigits.push(parsed);
+      keyEnteredDisplay.textContent = currentDigits.join('');
+      return;
+    }
     debug(currentDigits);
     currentDigits.push(parsed);
     keyEnteredDisplay.textContent = currentDigits.join(''); 
@@ -85,10 +98,9 @@ function onBtnExecution(buttonId){
     console.log(params.first);
     //check to see if you should commit buttonId to operator;  
     if(currentDigits.length === 0){
-        console.log(`${currentDigits} currentDigits is empty, operator is present, check params.first.`);
+        console.log(`${currentDigits} currentDigits is empty, operator is present, need to check params.first.`);
         //check if params.first is defined
-        keyEnteredDisplay.textContent = `${currentDigits.join('')}`;
-      if(isParamsPropertyDefined(params.first)){
+      if(isNumber(params.first)){
         //if defined, changed operator only. 
         params.operator = buttonId; 
         totalDisplay.textContent = `${params.first} ${params.operator}`;
@@ -97,7 +109,7 @@ function onBtnExecution(buttonId){
       return;
     }
     //currentDigits is not empty - check if params. first is defined. 
-    if(isParamsPropertyDefined(params.first)){
+    if(isNumber(params.first)){
       //if defined, if currentDigits is empty then changed operator only. 
       if(currentDigits.length == 0){
         params.operator = buttonId; 
@@ -108,18 +120,25 @@ function onBtnExecution(buttonId){
       // currretDigits commit to params.last, result(), set currentDigits = [result]; 
       //return; 
       let strDigits = currentDigits.join('');
-      params.last = parseInt(strDigits);
+      params.last = Number(strDigits); 
       let calcResult = calc();
+      if (typeof calcResult == 'string'){
+        totalDisplay.textContent =`${calcResult}`;
+        resetAll();
+        keyEnteredDisplay.textContent = ``;
+        return;
+      }
       result = number_test(calcResult);
       totalDisplay.textContent = `${params.first} ${params.operator} ${params.last} = ${result}`; 
       currentDigits = [];
       params.first = result; 
       params.last = null
+      params.operator = buttonId; 
       return; 
     }
     // currentDigits is not empty - params.first is not defined.
     let strDigits = currentDigits.join('');
-    params.first = parseInt(strDigits);
+    params.first = Number(strDigits);
     params.operator = buttonId;
     currentDigits = [];
     totalDisplay.textContent = `${params.first} ${params.operator}`; 
@@ -130,7 +149,7 @@ function onBtnExecution(buttonId){
     // if params.first && params.operator have been commited, then result()
     debug(currentDigits);
     console.log(currentDigits, params);
-    if(isParamsPropertyDefined(params.first) && Object.values(operatorValues).includes(params.operator)){
+    if(isNumber(params.first) && Object.values(operatorValues).includes(params.operator)){
       //currentDigits is empty do not result(); 
       if(currentDigits.length === 0){
         totalDisplay.textContent = `${params.first} ${params.operator}`; 
@@ -138,11 +157,18 @@ function onBtnExecution(buttonId){
       }
       console.log(`currentDigits = ${currentDigits},params.first = ${params.first}, params.operator = ${params.operator}`);
       let strDigits = currentDigits.join('');
-      params.last = parseInt(strDigits);
+      params.last = Number(strDigits);
       let calcResult = calc();
+      if (typeof calcResult === 'string'){
+        totalDisplay.textContent =`${calcResult}`;
+        keyEnteredDisplay.textContent = ``;
+        resetAll();
+        return;
+      }
       result = number_test(calcResult); 
       totalDisplay.textContent = `${params.first} ${params.operator} ${params.last} = ${result}`; 
-      reset(); 
+      keyEnteredDisplay.textContent = ``;
+      resetParams(); 
       currentDigits = [result];
       return;  
     }
@@ -152,9 +178,7 @@ function onBtnExecution(buttonId){
     
   //if buttonId is 'Clear'/'Delete'; 
   if(buttonId === 'Clear' || buttonId === 'Delete'){
-    reset();
-    currentDigits = [];
-    result = null;
+    resetAll();
     keyEnteredDisplay.textContent = `enter Val`; 
     totalDisplay.textContent =`cleared`;
     return; 
@@ -164,6 +188,20 @@ function onBtnExecution(buttonId){
     currentDigits.pop(); 
     keyEnteredDisplay.textContent =`${currentDigits.join('')}`;
     return
+  }
+  if(buttonId === '+/-'){
+    let currentNum = Number(currentDigits.join('')); 
+    let negCurrentNum = Number(currentDigits.join('') * -1)
+    console.log(typeof currentNum, currentNum);
+    if(currentNum === negCurrentNum){
+      currentDigits = [parseInt(currentNum)];
+      keyEnteredDisplay.textContent = currentDigits;
+      return;
+      
+    }
+    currentDigits = [parseInt(negCurrentNum)];
+    keyEnteredDisplay.textContent = currentDigits; 
+    return;
   }
 }
 
@@ -198,10 +236,21 @@ for(let key of buttonValues) {
   }
 }
 
+/**
+ * 
+ * @param {number} parsed 
+ */
 function enterDigits(parsed) {
-  let digits = parsed.toString().split('');
+  let digits = parsed.toString().split('')
+  let isNeg;
   for (let digit of digits) {
+    if (digit === '-') {
+      isNeg = true;
+    }
     onBtnExecution(digit);
+  }
+  if (isNeg) {
+    onBtnExecution('+/-');
   }
 }
 
@@ -212,37 +261,62 @@ function test(name, callback) {
   } catch(error) {
     console.log(`FAIL - ${name} (${error})`);
   } finally {
-    reset();
-    currentDigits =[];
+    resetAll();
   }
 }
 
-function assertCalculation({ first, operator, last, expected }) {
+function testBasicCalc({ first, operator, last, expected }) {
   enterDigits(first);
   onBtnExecution(operator);
   enterDigits(last);
   onBtnExecution('Enter');
 
-  if (result !== expected) {
-    let message = `${first} ${operator} ${last}`;
-    throw Error(`${message} = ${result} (expected: ${expected})`);
+  let display = `${first} ${operator} ${last} = ${result}`;
+  assertDisplay(display, `${display} (expected: ${expected})`);
+}
+
+function assertDisplay(expected, message) {
+  assertThat(totalDisplay.textContent === expected, message);
+}
+
+function assertResult(expected, message) {
+  let [formula, result] = totalDisplay.textContent.split(' = ');
+  assertThat(result == expected, message);
+}
+
+function assertThat(condition, message) {
+  if (!condition) {
+    throw Error(message);
   }
+}
+
+function assertNull(value, message) {
+  assertThat(value === null, message);
 }
 
 function runTests() {
   debugging = false;
 
   test('addition', () => {
-    assertCalculation({
+    testBasicCalc({
       first: 120,
       operator: '+',
       last: 5,
-      expected: 125
+      expected: 125,
+    });
+  });
+
+  test('addition with negatives', () => {
+    testBasicCalc({
+      first: -120,
+      operator: '+',
+      last: 5,
+      expected: -115,
     });
   });
   
   test('subtraction', () => {
-    assertCalculation({
+    testBasicCalc({
       first: 50,
       operator: '-',
       last: 3,
@@ -250,7 +324,7 @@ function runTests() {
     });
   });
   test('multiplication', ()=>{
-    assertCalculation({
+    testBasicCalc({
       first: 15,
       operator: '*',
       last: 40, 
@@ -258,7 +332,7 @@ function runTests() {
     });
   });
   test('division', () =>{
-    assertCalculation({
+    testBasicCalc({
       first: 10, 
       operator: '/',
       last: 2,
@@ -266,9 +340,50 @@ function runTests() {
     })
   })
 
+  test('operator is ignored before other input', () =>{
+    function assertAllNull(message) {
+      let allNull = Object.values(params).concat(result).every(val => val === null);
+      allNull &= !currentDigits.length;
+      assertThat(allNull, message);
+    }
+  
+    onBtnExecution('+');
+    assertAllNull('after operator all null');
+  });
+  
+  test('calc with operator and then continue with enter', () => {
+    let firstDigit = 5;
+    let secondDigit = 3;
+    enterDigits(firstDigit);
+    onBtnExecution('+')
+    enterDigits(secondDigit);
+  
+    let firstResult = firstDigit + secondDigit;
+  
+    onBtnExecution('+');
+    assertResult(firstResult, 'correct after calc with operator');
+  
+    onBtnExecution('Enter');
+    assertResult(firstResult * 2, 'correct after enter');
+  });
+
+  test('calc with enter and then continue with enter', () => {
+    let firstDigit = 5;
+    let secondDigit = 3;
+    enterDigits(firstDigit);
+    onBtnExecution('+')
+    enterDigits(secondDigit);
+  
+    let firstResult = firstDigit + secondDigit;
+  
+    onBtnExecution('Enter');
+    assertResult(firstResult, 'correct after calc with operator');
+  
+    onBtnExecution('Enter');
+    assertResult(firstResult + secondDigit * 2, 'correct after enter');
+  });
+
   debugging = true;
 }
 
 runTests();
-
-//obj that has properties { number/operator/string : someFunction(parsed/operator/string) }
