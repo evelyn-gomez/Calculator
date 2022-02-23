@@ -2,21 +2,22 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Evelyn's Calculator Poject</title>
   <link rel="stylesheet" href="style.css">
   <script rel="script" src="script.js" defer></script>
 </head>
 <body>
-  <h1>Calculator Project</h1>
-  <div class="calculator lightmode">
-    <div class="answer">
-      <div id="total">Total</div>
-      <div id="keysEntered">Keys Entered</div>
-    </div>
-    <div class="btns"></div>
-    <div class="enterbtn">
-      <button id="Enter" onclick="onBtnExecution(id)" >Enter</button>
+  <div class="main-page">
+    <h1>Calculator Project</h1>
+    <div class="calculator lightmode">
+      <div class="answer">
+        <div id="total">Total</div>
+        <div id="keysEntered">Keys Entered</div>
+      </div>
+      <div class="btns"></div>
+      <div class="enterbtn">
+        <button id="Enter" onclick="onKeyInput(id)" >Enter</button>
+      </div>
     </div>
   </div>
   <footer>
@@ -25,4 +26,5 @@
     <p>Evelyn Gomez</p>
   </footer>
 </body>
+
 </html>
