@@ -7,4 +7,5 @@ The Odin Project Calculator Project
 
 ## JS    
 
-
+## Git
+updating git commands - git commit.template
